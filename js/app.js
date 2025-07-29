@@ -4,6 +4,12 @@ let cliente = {
     pedidos:[]
 }
 
+let categorias = {
+    1:'Comida',
+    2:'Bebidas',
+    3:'Postres'
+}
+
 const btnGuardar = document.querySelector('#guardar-cliente');
 btnGuardar.addEventListener('click',guargarCliente);
 
@@ -51,7 +57,62 @@ function obtenerPlatillos(){
     const url = 'js/db.json';
 
     fetch(url)
-                .then(datos => console.log(datos))
-                .then(resultado => console.log(resultado))
+                .then(datos => datos.json())
+                .then(resultado => mostrarPlatillos(resultado.platillos))
 }
 
+function mostrarPlatillos(platillos){
+
+    const contenido = document.querySelector('#platillos .contenido');
+
+    platillos.forEach(platillo => {
+        const row = document.createElement('DIV');
+        row.classList.add('row', 'py-3', 'border-top');
+
+        const nombre = document.createElement('P');
+        nombre.classList.add('col-md-4');
+        nombre.textContent = platillo.nombre;
+
+        const precio = document.createElement('P');
+        precio.classList.add('col-md-3','fw-bold');
+        precio.textContent = `$${platillo.precio}`;
+
+        const categoria = document.createElement('P');
+        categoria.classList.add('col-md-3');
+        categoria.textContent = categorias[platillo.categoria];
+
+        const inputCantidad = document.createElement('INPUT');
+        inputCantidad.type = 'number';
+        inputCantidad.min = 0;
+        inputCantidad.value = 0;
+        inputCantidad.id = 'producto-${platillo.id}';
+        inputCantidad.classList.add('form-control');
+
+        inputCantidad.onchange = function(){
+            const cantidad = parseInt(inputCantidad.value);
+            agregarPlatillo({...platillo,cantidad});
+        }
+
+        const agregar = document.createElement('DIV');
+        agregar.classList.add('col-md-2');
+        agregar.appendChild(inputCantidad);
+
+        row.appendChild(nombre);
+        row.appendChild(precio);
+        row.appendChild(categoria);
+        row.appendChild(agregar);
+
+        contenido.appendChild(row);
+
+    });
+}
+
+function agregarPlatillo(producto){
+    let {pedidos} = cliente;
+
+    if(producto.cantidad > 0){
+        cliente.pedidos = [...pedidos, producto];
+    }else{
+        console.log('No pasa test')
+    }
+}
