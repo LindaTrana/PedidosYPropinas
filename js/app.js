@@ -111,8 +111,112 @@ function agregarPlatillo(producto){
     let {pedidos} = cliente;
 
     if(producto.cantidad > 0){
-        cliente.pedidos = [...pedidos, producto];
-    }else{
-        console.log('No pasa test')
+        if(pedidos.some(plato => plato.id === producto.id)){
+            const pedidoActualizado = pedidos.map(plato => {
+                if(plato.id === producto.id){
+                    plato.cantidad = producto.cantidad
+                }
+                return plato;
+            });
+
+            cliente.pedidos = [...pedidoActualizado];
+        } else {
+            cliente.pedidos = [...pedidos, producto];
+        }
+    } else {
+        const eliminados = pedidos.filter(pedido => pedido.id !== producto.id);
+        cliente.pedidos = [...eliminados]
+    }
+
+    limpiarHtml();
+   actualizarResumen();
+}
+
+function actualizarResumen(){
+    const contenido = document.querySelector('#resumen .contenido');
+
+    const resumen = document.createElement('div');
+    resumen.classList.add('col-md-6','card','py-5', 'px-3','shadow');
+
+    const mesa = document.createElement('p');
+    mesa.textContent = 'Mesa: ';
+    mesa.classList.add('fw-bold');
+
+    const mesaSpan = document.createElement('span');
+    mesaSpan.textContent = cliente.mesa;
+    mesaSpan.classList.add('fw-normal');
+
+    //PARA LA HORA
+    const hora = document.createElement('p');
+    hora.textContent = 'Hora: ';
+    hora.classList.add('fw-bold');
+
+    const horaSpan = document.createElement('span');
+    horaSpan.textContent = cliente.hora;
+    horaSpan.classList.add('fw-normal');
+
+    mesa.appendChild(mesaSpan);
+    hora.appendChild(horaSpan);
+
+    const heading = document.createElement('h3');
+    heading.textContent = ' Platillos consumidos';
+    heading.classList.add('my-4','text-center');
+
+    const grupo = document.createElement('ul');
+    grupo.classList.add('list-group');
+
+    const {pedidos} = cliente;
+    pedidos.forEach(plato => {
+        const {nombre,id,cantidad,precio,categoria} = plato;
+
+        const lista = document.createElement('li');
+        lista.classList.add('list-group-item');
+
+        const nombreEl = document.createElement('h4');
+        nombreEl.classList.add('my-4');
+        nombreEl.textContent = nombre;
+
+        const cantidadEl = document.createElement('p');
+        cantidadEl.classList.add('fw-bold');
+        cantidadEl.textContent = 'Cantidad: ';
+
+        const cantidadSpan = document.createElement('span');
+        cantidadSpan.classList.add('fw-normal');
+        cantidadSpan.textContent = cantidad;
+
+        const precioEL = document.createElement('p');
+        precioEL.classList.add('fw-bold');
+        precioEL.textContent = 'Precio: ';
+
+        const precioSpan = document.createElement('span');
+        precioSpan.classList.add('fw-normal');
+        precioSpan.textContent = precio;
+
+
+        cantidadEl.appendChild(cantidadSpan)
+        precioEL.appendChild(precioSpan)
+
+        lista.appendChild(nombreEl);
+        lista.appendChild(cantidadEl);
+        lista.appendChild(precioEL);
+        grupo.appendChild(lista);
+        
+
+    })
+
+
+    resumen.appendChild(mesa);
+    resumen.appendChild(hora);
+    resumen.appendChild(heading);
+    resumen.appendChild(grupo);
+
+    contenido.appendChild(resumen);
+}
+
+function limpiarHtml(){
+    const contenido = document.querySelector('#resumen .contenido');
+
+    while (contenido.firstChild){
+        contenido.removeChild(contenido.firstChild);
     }
 }
