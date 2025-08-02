@@ -123,13 +123,17 @@ function agregarPlatillo(producto){
         } else {
             cliente.pedidos = [...pedidos, producto];
         }
-    } else {
+    } else { // si el usuario disminuye a cero el pedido.
         const eliminados = pedidos.filter(pedido => pedido.id !== producto.id);
-        cliente.pedidos = [...eliminados]
+        cliente.pedidos = [...eliminados];
     }
 
-    limpiarHtml();
-   actualizarResumen();
+    if(cliente.pedidos.length){
+        actualizarResumen();
+    } else {
+        mensajePedidoVacio();
+    }
+
 }
 
 function actualizarResumen(){
@@ -155,9 +159,6 @@ function actualizarResumen(){
     horaSpan.textContent = cliente.hora;
     horaSpan.classList.add('fw-normal');
 
-    mesa.appendChild(mesaSpan);
-    hora.appendChild(horaSpan);
-
     const heading = document.createElement('h3');
     heading.textContent = ' Platillos consumidos';
     heading.classList.add('my-4','text-center');
@@ -166,6 +167,7 @@ function actualizarResumen(){
     grupo.classList.add('list-group');
 
     const {pedidos} = cliente;
+
     pedidos.forEach(plato => {
         const {nombre,id,cantidad,precio,categoria} = plato;
 
@@ -192,18 +194,37 @@ function actualizarResumen(){
         precioSpan.classList.add('fw-normal');
         precioSpan.textContent = precio;
 
+        const subEl = document.createElement('p');
+        subEl.classList.add('fw-bold');
+        subEl.textContent = 'Subtotal: ';
 
-        cantidadEl.appendChild(cantidadSpan)
-        precioEL.appendChild(precioSpan)
+        const subSpan = document.createElement('span');
+        subSpan.classList.add('fw-normal');
+        subSpan.textContent = calcularPrecio(precio,cantidad);
+
+        const btnEliminar = document.createElement('button');
+        btnEliminar.classList.add('btn','btn-danger');
+        btnEliminar.textContent = 'Eliminar pedido';
+
+        btnEliminar.onclick = function(){
+            eliminarPedido(id);
+        }
+
+        mesa.appendChild(mesaSpan);
+        hora.appendChild(horaSpan);
+
+        cantidadEl.appendChild(cantidadSpan);
+        precioEL.appendChild(precioSpan);
+        subEl.appendChild(subSpan);
 
         lista.appendChild(nombreEl);
         lista.appendChild(cantidadEl);
         lista.appendChild(precioEL);
+        lista.appendChild(subEl);
+        lista.appendChild(btnEliminar);
         grupo.appendChild(lista);
-        
 
     })
-
 
     resumen.appendChild(mesa);
     resumen.appendChild(hora);
@@ -219,4 +240,38 @@ function limpiarHtml(){
     while (contenido.firstChild){
         contenido.removeChild(contenido.firstChild);
     }
+}
+
+function calcularPrecio(precio,cantidad){
+    return precio * cantidad
+}
+
+function eliminarPedido(id){
+    const {pedidos} = cliente;
+
+    const eliminados = pedidos.filter(pedido => pedido.id !== id);
+    cliente.pedidos = [...eliminados];
+
+    limpiarHtml();
+
+   if(cliente.pedidos.length){
+        actualizarResumen();
+    } else {
+        mensajePedidoVacio();
+    }
+
+    // regresando a 0 los inputs una vez que se eliminan.
+    const productoEliminado = `#producto-{id}`;
+    const inputEliminado = document.querySelector(productoEliminado);
+    inputEliminado.value = 0;
+}
+
+function mensajePedidoVacio(){
+    const contenido = document.querySelector('#resumen .contenido');
+
+    const texto = document.createElement('p');
+    texto.classList.add('text-center');
+    texto.textContent = 'Agrega los elementos al pedido';
+
+    contenido.appendChild(texto);
 }
